@@ -123,6 +123,24 @@ ggplot(kick.text.count , aes(word, n)) +
     theme_hc()
 
 
+kick.text.tf_idf <- kick.text.count %>%
+    bind_tf_idf(word, main_category, n)
+
+
+
+kick.text.tf_idf %>%
+    arrange(desc(tf_idf)) %>%
+    mutate(word = factor(word, levels = rev(unique(word)))) %>% 
+    group_by(main_category) %>% 
+    top_n(15) %>% 
+    ungroup() %>%
+    ggplot(aes(word, tf_idf, fill = main_category)) +
+    geom_col(show.legend = FALSE) +
+    labs(x = NULL, y = "tf-idf") +
+    facet_wrap(~main_category, ncol = 2, scales = "free") +
+    coord_flip()
+
+
 #  Top words for items that passed or did not 
 
 kick.text.pass <- kick.text %>%
@@ -138,3 +156,25 @@ ggplot(kick.text.pass , aes(word, n)) +
     xlab(NULL) +
     coord_flip() +
     theme_hc()
+
+
+
+
+kick.text.tf_idf <- kick.text.pass %>%
+    bind_tf_idf(word, pass, n)
+
+
+
+kick.text.tf_idf %>%
+    arrange(desc(tf_idf)) %>%
+    mutate(word = factor(word, levels = rev(unique(word)))) %>% 
+    group_by(pass) %>% 
+    top_n(15) %>% 
+    ungroup() %>%
+    ggplot(aes(word, tf_idf, fill = pass)) +
+    geom_col(show.legend = FALSE) +
+    labs(x = NULL, y = "tf-idf") +
+    facet_wrap(~pass, ncol = 2, scales = "free") +
+    coord_flip()
+
+
