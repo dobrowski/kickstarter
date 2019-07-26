@@ -178,3 +178,34 @@ kick.text.tf_idf %>%
     coord_flip()
 
 
+
+#  Top words for items that passed or did not by cateogy with purrr
+
+kick.text.nest.all <- kick.text %>%
+    group_by(main_category) %>%
+    # count(word, sort = TRUE) %>%
+    # filter(n > 50) %>%
+    nest() %>%
+    mutate(passwords = data %>%
+               map(~ .x %>% group_by(pass) %>%
+                       count(word, sort = TRUE) %>%
+                       # filter(n > 50) 
+                       mutate(word = reorder(word, n)) %>%
+                       top_n(50)
+               )) %>%
+    mutate(telling = passwords %>%
+               map(~ bind_tf_idf(.x, word, pass, n)  %>%
+                       arrange(desc(tf_idf)) %>%
+                       mutate(word = factor(word, levels = rev(unique(word)))) %>% 
+                       group_by(pass) %>% 
+                       top_n(15)
+               )
+    ) %>% 
+    mutate(graphs = telling %>%
+               map(~  ggplot(data = .x, aes(word, tf_idf, fill = pass)) +
+                       geom_col(show.legend = FALSE) +
+                       labs(x = NULL, y = "tf-idf") +
+                       facet_wrap(~pass, ncol = 2, scales = "free") +
+                       coord_flip()
+               )
+    )
